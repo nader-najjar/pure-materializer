@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+stage=${1:?Stage name required}
+[[ $stage =~ ^[a-z0-9-]+$ ]] || { echo 'Invalid stage name' >&2; exit 1; }
+jq -en --arg number "$GITHUB_RUN_NUMBER" '
+    $number | test("^[1-9][0-9]*$") and (tonumber <= 9007199254740991)
+' >/dev/null
+
+environment="pipeline-stage-$stage"
+previous=$(gh api --method GET --paginate --slurp "repos/$GITHUB_REPOSITORY/deployments" \
+    -f "environment=$environment" -F per_page=100 | jq -ce '
+    [.[][] |
+        if .task != "stage-admission" then error("Unexpected admission task") else .payload end |
+        if type == "string" then fromjson else . end |
+        if type != "object" or (.runNumber | type) != "number" then error("Invalid admission record")
+        elif .runNumber < 1 or .runNumber > 9007199254740991 or .runNumber != (.runNumber | floor)
+            then error("Invalid admission counter")
+        else . end
+    ] | max_by(.runNumber) // {runNumber: 0}
+')
+last_run=$(jq -r '.runNumber' <<< "$previous")
+
+if (( GITHUB_RUN_NUMBER < last_run )); then
+    echo "Skipping $stage: run $GITHUB_RUN_NUMBER is older than admitted run $last_run"
+    echo 'accepted=false' >> "$GITHUB_OUTPUT"
+    exit 0
+fi
+
+payload=$previous
+if [[ $stage == inputs ]]; then
+    java_repository='nader-najjar/legacy-nix-template-pure-java'
+    source_sha=$(jq -r --arg repository "$java_repository" '.pins[$repository] // empty' <<< "$previous")
+    if (( GITHUB_RUN_NUMBER > last_run )); then
+        source_sha=${JAVA_COMMIT:-$source_sha}
+        if [[ -z $source_sha ]]; then
+            source_sha=$(gh api "repos/$java_repository/branches/main" --jq '.commit.sha')
+        fi
+    fi
+    [[ $source_sha =~ ^[a-f0-9]{40}$ ]] || { echo 'Java input must be a full commit SHA' >&2; exit 1; }
+    if (( GITHUB_RUN_NUMBER > last_run )); then
+        payload=$(jq -c --arg java "$java_repository" --arg source "$source_sha" \
+            --arg pipeline "$GITHUB_REPOSITORY" --arg sha "$GITHUB_SHA" '
+            {pins: ((.pins // {}) + {($java): $source, ($pipeline): $sha})}
+        ' <<< "$previous")
+    fi
+fi
+
+if (( GITHUB_RUN_NUMBER > last_run )); then
+    payload=$(jq -c --argjson runNumber "$GITHUB_RUN_NUMBER" '. + {runNumber: $runNumber}' <<< "$payload")
+    response=$(jq -cn --arg ref "$GITHUB_SHA" --arg environment "$environment" --argjson payload "$payload" '
+        {ref: $ref, task: "stage-admission", environment: $environment, auto_merge: false,
+         required_contexts: [], production_environment: false, payload: $payload}
+    ' | gh api --method POST "repos/$GITHUB_REPOSITORY/deployments" --input - --include --silent)
+    status=${response%%$'\n'*}
+    [[ $status =~ ^HTTP/[^[:space:]]+[[:space:]]+201([[:space:]]|$) ]] || {
+        echo "Admission was not recorded for $stage" >&2
+        exit 1
+    }
+fi
+
+echo 'accepted=true' >> "$GITHUB_OUTPUT"
+if [[ $stage == inputs ]]; then
+    echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"
+fi

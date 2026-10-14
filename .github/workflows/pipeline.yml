@@ -1,0 +1,55 @@
+name: Pipeline
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      java_commit:
+        description: Java commit SHA; leave empty to keep its admitted pin (main for initial setup)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  select_release:
+    name: Admit Inputs
+    runs-on: ubuntu-24.04-arm
+    concurrency:
+      group: pipeline-stage-inputs
+      queue: max
+      cancel-in-progress: false
+    outputs:
+      source_sha: ${{ steps.release.outputs.source_sha }}
+      accepted: ${{ steps.release.outputs.accepted }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - run: ./.github/scripts/admit-stage inputs
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JAVA_COMMIT: ${{ inputs.java_commit }}
+
+  ci:
+    name: CI
+    needs: select_release
+    if: needs.select_release.outputs.accepted == 'true'
+    uses: nader-najjar/legacy-nix-template-pure-java/.github/workflows/ci.yml@main
+    with:
+      repository: nader-najjar/legacy-nix-template-pure-java
+      source_sha: ${{ needs.select_release.outputs.source_sha }}
+
+  cd:
+    name: CD
+    needs: [select_release, ci]
+    if: needs.ci.outputs.accepted == 'true'
+    uses: ./.github/workflows/cd.yml
+    with:
+      source_sha: ${{ needs.select_release.outputs.source_sha }}
