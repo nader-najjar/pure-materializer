@@ -1,0 +1,7 @@
+[
+  {
+    "source_repository": "nader-najjar/pure-java-legacy",
+    "build_system": "universal",
+    "runners": ["ubuntu-24.04-arm", "ubuntu-24.04"]
+  }
+]

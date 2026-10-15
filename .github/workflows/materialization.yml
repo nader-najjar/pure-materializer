@@ -1,0 +1,29 @@
+name: Materialization
+
+on:
+  workflow_dispatch:
+    inputs:
+      bounce:
+        description: Rebuild current pins without changing any source revision
+        type: boolean
+        required: true
+      source_repository:
+        description: Registered source repository (required unless bounce is true)
+        type: string
+        required: false
+      source_sha:
+        description: Full commit SHA for the source repository (required unless bounce is true)
+        type: string
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  materialization:
+    name: Materialization
+    uses: nader-najjar/global-materialization-workflows/.github/workflows/global_materialization.yml@c027353220b94aa6cd669e364cba2a2b8c1c6e28
+    with:
+      bounce: ${{ inputs.bounce }}
+      source_repository: ${{ inputs.source_repository }}
+      source_sha: ${{ inputs.source_sha }}
