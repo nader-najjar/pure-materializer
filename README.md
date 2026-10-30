@@ -1,5 +1,7 @@
 # pure-materializer
 
+> Materialize software from its components.
+
 Run **Materialization** manually from Actions to build the sources registered in [repositories.json](.github/repositories.json). Each entry specifies its build system and native runners. CI builds each repository on every listed runner using the same source pin.
 
 Materialization calls a pinned workflow from [global-materialization-workflows](https://github.com/nader-najjar/global-materialization-workflows). Each source build must produce `build/release-artifact.tar.gz`, which CI uploads as `release-artifact-<owner>--<repository>-<SHA>-<runner>`.
