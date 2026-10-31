@@ -1,0 +1,41 @@
+name: Ignition
+
+on:
+  workflow_dispatch:
+    inputs:
+      selection_mode:
+        description: How to select sources and handle saved pins
+        type: choice
+        required: true
+        options:
+          - materialize
+          - dry_run
+          - bounce
+      source_repository:
+        description: Source repository to pin; omit for bounce
+        type: string
+        required: false
+      source_sha:
+        description: Full source commit SHA; omit for bounce
+        type: string
+        required: false
+
+concurrency:
+  group: materializer-execution
+  queue: max
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  ignite:
+    name: Ignite
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+    steps:
+      - uses: nader-najjar/global-materialization-workflows/.github/actions/global_ignition@main
+        with:
+          selection_mode: ${{ inputs.selection_mode }}
+          source_repository: ${{ inputs.source_repository }}
+          source_sha: ${{ inputs.source_sha }}
