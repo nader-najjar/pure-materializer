@@ -1,0 +1,19 @@
+name: Materializer
+
+on:
+  workflow_dispatch:
+    inputs:
+      snapshot_sha:
+        description: Immutable pin-set commit supplied by Ignition
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: CI
+    uses: nader-najjar/global-materialization-workflows/.github/workflows/global_ci.yml@main
+    with:
+      snapshot_sha: ${{ inputs.snapshot_sha }}
