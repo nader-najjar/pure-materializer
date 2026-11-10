@@ -1,0 +1,19 @@
+{
+  "repositories": [
+    {
+      "repositoryName": "nader-najjar/pure-java",
+      "branch": "main",
+      "build_system": "universal",
+      "platforms": [
+        "aarch64-linux",
+        "x86_64-linux"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "name": "build",
+      "operation": "build"
+    }
+  ]
+}
