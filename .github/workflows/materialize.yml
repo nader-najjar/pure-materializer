@@ -1,4 +1,5 @@
 name: "Materialize"
+run-name: "Materialize"
 "on":
   push:
     branches:
@@ -18,12 +19,12 @@ jobs:
       matrix:
         include:
         - repositoryName: "nader-najjar/pure-java"
-          commitSHA: "d4b920b6a7cba8a8b61e295229dc8a9c7744deee"
+          commitSHA: "b303c02512ecf9b27f6a2c71e6d88ba1c3b83cdb"
           buildSystem: "universal"
           platform: "aarch64-linux"
           runner: "ubuntu-24.04-arm"
         - repositoryName: "nader-najjar/pure-java"
-          commitSHA: "d4b920b6a7cba8a8b61e295229dc8a9c7744deee"
+          commitSHA: "b303c02512ecf9b27f6a2c71e6d88ba1c3b83cdb"
           buildSystem: "universal"
           platform: "x86_64-linux"
           runner: "ubuntu-24.04"
@@ -51,9 +52,8 @@ jobs:
       env:
         REPOSITORY_NAME: "${{ matrix.repositoryName }}"
     - name: "Upload Release Artifact"
-      uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02"
+      uses: "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9"
       with:
-        path: "build/release-artifact.tar.gz"
-        name: "${{ env.ARTIFACT_REPOSITORY }}-${{ matrix.platform }}-${{ matrix.commitSHA\
-          \ }}"
         if-no-files-found: "error"
+        path: "build/release-artifact.tar.gz"
+        name: "${{ env.ARTIFACT_REPOSITORY }}-${{ matrix.platform }}-${{ matrix.commitSHA }}"
