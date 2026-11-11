@@ -1,0 +1,59 @@
+name: "Materialize"
+"on":
+  push:
+    branches:
+    - "execution"
+concurrency:
+  group: "materialize"
+  queue: "single"
+  cancel-in-progress: false
+permissions:
+  contents: "read"
+jobs:
+  step_1:
+    name: "build ${{ matrix.repositoryName }} (${{ matrix.platform }})"
+    runs-on: "${{ matrix.runner }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - repositoryName: "nader-najjar/pure-java"
+          commitSHA: "d4b920b6a7cba8a8b61e295229dc8a9c7744deee"
+          buildSystem: "universal"
+          platform: "aarch64-linux"
+          runner: "ubuntu-24.04-arm"
+        - repositoryName: "nader-najjar/pure-java"
+          commitSHA: "d4b920b6a7cba8a8b61e295229dc8a9c7744deee"
+          buildSystem: "universal"
+          platform: "x86_64-linux"
+          runner: "ubuntu-24.04"
+    steps:
+    - name: "Reject Manual Retries"
+      uses: "$/.github/actions/reject-manual-retries"
+    - name: "Reject Unsupported Build Systems"
+      if: "matrix.buildSystem != 'universal'"
+      run: |
+        echo "::error::Unsupported build system: $BUILD_SYSTEM"
+        exit 1
+      env:
+        BUILD_SYSTEM: "${{ matrix.buildSystem }}"
+    - name: "Check Out ${{ matrix.repositoryName }}"
+      uses: "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"
+      with:
+        ref: "${{ matrix.commitSHA }}"
+        persist-credentials: "false"
+        repository: "${{ matrix.repositoryName }}"
+    - name: "Build ${{ matrix.repositoryName }}"
+      if: "matrix.buildSystem == 'universal'"
+      uses: "$/.github/actions/universal-build"
+    - name: "Set Artifact Repository Name"
+      run: "echo \"ARTIFACT_REPOSITORY=${REPOSITORY_NAME/\\//@}\" >> \"$GITHUB_ENV\""
+      env:
+        REPOSITORY_NAME: "${{ matrix.repositoryName }}"
+    - name: "Upload Release Artifact"
+      uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02"
+      with:
+        path: "build/release-artifact.tar.gz"
+        name: "${{ env.ARTIFACT_REPOSITORY }}-${{ matrix.platform }}-${{ matrix.commitSHA\
+          \ }}"
+        if-no-files-found: "error"
