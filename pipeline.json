@@ -5,14 +5,45 @@
       "branch": "main",
       "build_system": "universal",
       "platforms": [
-        "aarch64-linux",
-        "x86_64-linux"
+        "aarch64-linux"
+      ]
+    },
+    {
+      "repositoryName": "nader-najjar/pure-java-lambda",
+      "branch": "main",
+      "build_system": "universal",
+      "platforms": [
+        "aarch64-linux"
+      ]
+    },
+    {
+      "repositoryName": "nader-najjar/pure-javascript",
+      "branch": "main",
+      "build_system": "universal",
+      "platforms": [
+        "aarch64-linux"
+      ]
+    },
+    {
+      "repositoryName": "nader-najjar/pure-javascript-react",
+      "branch": "main",
+      "build_system": "universal",
+      "platforms": [
+        "aarch64-linux"
+      ]
+    },
+    {
+      "repositoryName": "nader-najjar/pure-schematic",
+      "branch": "main",
+      "build_system": "universal",
+      "platforms": [
+        "aarch64-linux"
       ]
     }
   ],
   "steps": [
     {
-      "name": "build",
+      "name": "Build",
       "operation": "build"
     }
   ]
