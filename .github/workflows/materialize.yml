@@ -12,7 +12,7 @@ permissions:
   contents: "read"
 jobs:
   step_1:
-    name: "build ${{ matrix.repositoryName }} (${{ matrix.platform }})"
+    name: "Build ${{ matrix.repositoryName }} (${{ matrix.platform }})"
     runs-on: "${{ matrix.runner }}"
     strategy:
       fail-fast: false
@@ -23,11 +23,26 @@ jobs:
           buildSystem: "universal"
           platform: "aarch64-linux"
           runner: "ubuntu-24.04-arm"
-        - repositoryName: "nader-najjar/pure-java"
-          commitSHA: "b303c02512ecf9b27f6a2c71e6d88ba1c3b83cdb"
+        - repositoryName: "nader-najjar/pure-java-lambda"
+          commitSHA: "9ace4a75c8dedd5db826163979c6b603c38c7427"
           buildSystem: "universal"
-          platform: "x86_64-linux"
-          runner: "ubuntu-24.04"
+          platform: "aarch64-linux"
+          runner: "ubuntu-24.04-arm"
+        - repositoryName: "nader-najjar/pure-javascript"
+          commitSHA: "02a660646b7c7abe77d022066ef7cdf884317782"
+          buildSystem: "universal"
+          platform: "aarch64-linux"
+          runner: "ubuntu-24.04-arm"
+        - repositoryName: "nader-najjar/pure-javascript-react"
+          commitSHA: "d48fd2d317b5df41041db20104c3fb6f12e02217"
+          buildSystem: "universal"
+          platform: "aarch64-linux"
+          runner: "ubuntu-24.04-arm"
+        - repositoryName: "nader-najjar/pure-schematic"
+          commitSHA: "35e0dc65c8804d75d32500d15b832bd7049b8720"
+          buildSystem: "universal"
+          platform: "aarch64-linux"
+          runner: "ubuntu-24.04-arm"
     steps:
     - name: "Reject Manual Retries"
       uses: "$/.github/actions/reject-manual-retries"
@@ -42,8 +57,8 @@ jobs:
       uses: "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"
       with:
         ref: "${{ matrix.commitSHA }}"
-        persist-credentials: "false"
         repository: "${{ matrix.repositoryName }}"
+        persist-credentials: "false"
     - name: "Build ${{ matrix.repositoryName }}"
       if: "matrix.buildSystem == 'universal'"
       uses: "$/.github/actions/universal-build"
@@ -55,5 +70,5 @@ jobs:
       uses: "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9"
       with:
         if-no-files-found: "error"
-        path: "build/release-artifact.tar.gz"
         name: "${{ env.ARTIFACT_REPOSITORY }}-${{ matrix.platform }}-${{ matrix.commitSHA }}"
+        path: "build/release-artifact.tar.gz"
