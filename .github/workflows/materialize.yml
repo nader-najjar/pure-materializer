@@ -21,7 +21,7 @@ jobs:
       matrix:
         include:
         - repositoryName: "nader-najjar/pure-java"
-          commitSHA: "ea357feddb025693a040b1dd3640f4df559dcbbe"
+          commitSHA: "6f0e53a80486a7bca8caf647afe0087f8f34e299"
           buildSystem: "universal"
           platform: "aarch64-linux"
           runner: "ubuntu-24.04-arm"
