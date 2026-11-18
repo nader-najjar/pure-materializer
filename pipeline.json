@@ -13,6 +13,19 @@
       "operation": "build",
       "clientIdVariable": "PURE_APP_CLIENT_ID",
       "privateKeySecret": "PURE_APP_PRIVATE_KEY"
+    },
+    {
+      "name": "Continuous Integration - Packaging",
+      "operation": "package-oci-image-to-ghcr",
+      "clientIdVariable": "PURE_APP_CLIENT_ID",
+      "privateKeySecret": "PURE_APP_PRIVATE_KEY",
+      "targets": [
+        {
+          "repositoryName": "nader-najjar/pure-java",
+          "branch": "main",
+          "platform": "aarch64-linux"
+        }
+      ]
     }
   ]
 }
