@@ -19,6 +19,8 @@
       "operation": "package-oci-image-to-ghcr",
       "clientIdVariable": "PURE_APP_CLIENT_ID",
       "privateKeySecret": "PURE_APP_PRIVATE_KEY",
+      "ghcrUsername": "nader-najjar",
+      "ghcrPATSecret": "PURE_PACKAGING_PAT",
       "targets": [
         {
           "repositoryName": "nader-najjar/pure-java",
