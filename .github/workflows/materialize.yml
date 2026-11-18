@@ -89,6 +89,8 @@ jobs:
     env:
       CLIENT_ID_VARIABLE: "PURE_APP_CLIENT_ID"
       PRIVATE_KEY_SECRET: "PURE_APP_PRIVATE_KEY"
+      GHCR_USERNAME: "nader-najjar"
+      GHCR_PAT_SECRET: "PURE_PACKAGING_PAT"
     steps:
     - name: "Reject Manual Retries"
       uses: "$/.github/actions/reject-manual-retries"
@@ -109,7 +111,6 @@ jobs:
         owner: "${{ env.REPOSITORY_OWNER }}"
         repositories: "${{ matrix.repositoryName }}"
         permission-contents: "read"
-        permission-packages: "write"
     - name: "Download and Extract Release"
       shell: "bash"
       env:
@@ -133,8 +134,8 @@ jobs:
     - name: "Log In to GHCR"
       shell: "bash"
       env:
-        GHCR_TOKEN: "${{ steps.create-repository-token.outputs.token }}"
-      run: "printf '%s' \"$GHCR_TOKEN\" | docker login ghcr.io --username \"$REPOSITORY_OWNER\" --password-stdin"
+        GHCR_TOKEN: "${{ secrets[env.GHCR_PAT_SECRET] }}"
+      run: "printf '%s' \"$GHCR_TOKEN\" | docker login ghcr.io --username \"$GHCR_USERNAME\" --password-stdin"
     - name: "Build and Push Image"
       shell: "bash"
       run: |
